@@ -1,0 +1,8 @@
+{
+  "appId": "com.saransh.apexos",
+  "appName": "Apex OS",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "name": "Apex OS \u2014 Personal Command Centre",
+  "short_name": "Apex OS",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0b0e13",
+  "theme_color": "#0b0e13",
+  "description": "University applications, competitions, projects, evidence, and learning tracker."
+}

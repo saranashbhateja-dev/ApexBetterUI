@@ -1,0 +1,184 @@
+APEX OS — CURRENT 20-PROJECT PROGRAMME
+======================================
+
+Status: proposed portfolio plan. Nothing in this document implies implementation or completion.
+Structure: four tracks, five projects each. Each project has a distinct scope, a core invariant, a verification approach and a portfolio-relevance statement.
+
+PROGRAMME-WIDE RELEASE STANDARD
+------------------------------
+1. Smoke test: a fresh checkout builds/runs a small fixture with a clean exit; record the exact command.
+2. Relevant diagnostics: use applicable sanitizers, race detectors, static checks, schema checks or security tests; state why a tool does not apply where relevant.
+3. Independent reference: compare core behaviour against a separate simple oracle, expected fixtures or a second implementation.
+4. Honest RESULTS.md: record environment, exact commands, actual outputs, limits, complexity assumptions and known failures. Planned test sizes are targets until actually run.
+
+TRACK I — CORE SYSTEMS ARCHITECTURE & LOW-LEVEL TOOLING
+-------------------------------------------------------
+
+1. Tiny Distributed Job Queue with Fault Injection
+Blueprint: A distributed scheduling framework managing an asynchronous background worker pool, thread safety and state stability under automated fault injection.
+Implementation scope: Specify job states and transitions; submit, claim, acknowledge, retry, cancel and shut down jobs; inject worker failures, timeouts and duplicate deliveries. Start with a deterministic local worker model before adding network processes.
+Invariant: Every job transition is legal and observable; retries do not silently lose work, and duplicate execution/completion semantics are explicit.
+Verification: Compare concurrent runs with a serial reference state model; use fixed-seed failure schedules and race diagnostics where supported.
+Portfolio relevance: Concurrency reasoning, synchronization primitives, and distributed-work orchestration with limits stated honestly.
+
+2. SafeText Index: A Memory-Safe C Search Library
+Blueprint: A low-level C text indexer with token normalization, boundary parsing, exact lookups and prefix lookups.
+Implementation scope: Define a byte-span API, ownership and allocation-failure contracts, normalization rules, index structure and query semantics.
+Invariant: Reads/writes remain within declared spans; ownership is explicit; allocation failures return documented errors without leaks.
+Verification: Strict compiler warnings, AddressSanitizer/UndefinedBehaviorSanitizer where supported, fuzzed boundaries and leak checks.
+Portfolio relevance: Pointer, allocation and raw-byte handling backed by repeatable evidence.
+
+3. Tiny Stack Machine: Bytecode VM & Reference Interpreter
+Blueprint: A VM that processes a restricted bytecode grammar, controls an evaluation stack and emits trace logs compared against an independent oracle.
+Implementation scope: Define opcode grammar, instruction effects, program counter, stack bounds, arithmetic and jump/error semantics; implement a separate reference interpreter.
+Invariant: Every opcode has explicit preconditions/effects; malformed programs fail deterministically.
+Verification: Compare per-step traces and final outcomes across generated valid and invalid programs.
+Portfolio relevance: Language implementation connected to machine-state modelling and executable specifications.
+
+4. PageStore: B+ Tree and Buffer-Pool Simulator
+Blueprint: A database-internals simulator for page serialization, index layouts, page eviction and crash-consistency logging.
+Implementation scope: Fixed-size page format, encode/decode, B+ tree operations, buffer pool and LRU policy, log records and interruption/recovery simulation.
+Invariant: Page decoding respects bounds, B+ tree ordering is preserved, and recovery matches the documented log contract.
+Verification: Differential index checks, page corruption, crash-point restart fixtures and relevant sanitizers.
+Portfolio relevance: Physical storage layouts, caching and recovery mechanics made testable.
+
+5. ReproBuild Core: Reproducible Project Toolchain
+Blueprint: A sandboxed workspace runner that executes relative build commands from a strict local manifest allowlist and captures categorical exit codes.
+Implementation scope: Validate manifest schema and executable allowlist; resolve relative paths safely; invoke argument arrays in controlled directories; capture results in a structured ledger.
+Invariant: Only approved commands execute inside the intended workspace; traversal and disallowed commands are rejected before launch.
+Verification: Malicious-manifest fixtures, deterministic result categorization and clean fixture builds.
+Portfolio relevance: Build engineering, configuration isolation and safe workspace orchestration.
+
+TRACK II — DISCRETE MATHEMATICS, GRAPH THEORY & ALGORITHM VERIFIERS
+-------------------------------------------------------------------
+
+6. Dependency Graph Auditor: Proof-Carrying Prerequisite Checks
+Blueprint: A graph engine representing dependency relations, producing topological orderings and isolating invalid cycles into human-readable fault paths.
+Implementation scope: Emit a certificate containing either a valid topological ordering or an edge-by-edge cycle witness.
+Invariant: Every ordering respects every edge; every cycle report is a real closed path in the graph.
+Verification: Independently validate certificates on hand-built and generated graphs.
+Portfolio relevance: Turns graph-theoretic invariants into independently checkable outputs.
+
+7. RouteForge: Graph Search and Priority-Queue Benchmark
+Blueprint: An algorithm laboratory measuring breadth-first search and Dijkstra with a custom min-heap over adversarial graph variants.
+Implementation scope: Generate reproducible graph families and record correctness, operation counts and repeated timing measurements separately.
+Invariant: Paths/distances are valid under declared weight assumptions; each benchmark result records its input and environment.
+Verification: Reference-solver checks on tiny graphs, fixed seeds and size sweeps.
+Portfolio relevance: Empirical complexity analysis without conflating wall-clock noise with theoretical bounds.
+
+8. Algorithm Arena: Parameterized Complexity Evidence Harness
+Blueprint: A benchmark suite comparing dynamic-programming optimization spaces, matrix-operation crossovers and greedy choices against brute-force mathematical oracles.
+Implementation scope: Parameterize inputs, expose operation counters, record timing and compare correctness against exhaustive references on small inputs.
+Invariant: Every variant solves the same stated problem; performance conclusions are limited to the tested regime.
+Verification: Exhaustive tiny cases, adversarial greedy counterexamples, parameter sweeps and saved machine-readable results.
+Portfolio relevance: Algorithmic optimisation supported by counterexamples and data.
+
+9. Proof Dossier: Counterexample Generator for Proposed Rules
+Blueprint: A constrained-input search engine that finds minimal boundary cases violating user-defined proposition rules.
+Implementation scope: Define domain constraints and predicates, enumerate/generate candidates, and minimise a failing input without changing the failure condition.
+Invariant: A reported counterexample satisfies input constraints and truly falsifies the rule; minimisation preserves that failure.
+Verification: Replay original and minimised cases with fixed seeds and saved search traces.
+Portfolio relevance: Automated reasoning and property-based test generation through inspectable counterexamples.
+
+10. Algorithm Differential Tester: Brute-Force Oracles
+Blueprint: A seeded regression harness comparing sliding-window, array-manipulation and sorting routines against simple trusted oracles.
+Implementation scope: Generate edge/random inputs, capture mismatch evidence, preserve seeds and turn every mismatch into a regression fixture.
+Invariant: Every mismatch is reproducible; oracle logic is independently checked on worked fixtures.
+Verification: Small exhaustive domains where feasible, fixed-seed fuzzing and regression replay.
+Portfolio relevance: Rigorous debugging and software validation across core algorithm patterns.
+
+TRACK III — ML MECHANICS, INTERPRETABILITY & MODEL SAFETY
+---------------------------------------------------------
+
+11. TinyTorchLab: First-Principles Neural Network Trainer
+Blueprint: A lightweight neural network playground implementing gradient checks, weight updates and loss calculation from first principles.
+Implementation scope: Implement a tiny MLP, loss, backpropagation and optimiser; perform finite-difference gradient checks.
+Invariant: Analytical gradients agree with numerical approximations within stated tolerances and runs are reproducible from recorded configuration.
+Verification: Gradient checks, selected operation comparisons and a toy task with saved seeds/hyperparameters.
+Portfolio relevance: Mathematical understanding of backpropagation beyond high-level API calls.
+
+12. ShiftCheck: Controlled Data-Shift Evaluation
+Blueprint: An analytics pipeline tracking data-slice variation, prediction confidence/calibration and training-serving skew signals.
+Implementation scope: Create controlled covariate/label shifts and compare slice metrics to an unchanged baseline; report what each metric can and cannot establish.
+Invariant: Every result identifies dataset version, split, model, slice and shift recipe.
+Verification: Recreate results from saved configuration and known-shift/no-shift fixtures.
+Portfolio relevance: Measured evaluation of distribution shift and calibration under controlled conditions.
+
+13. SourceTrace QA: Evidence-Linked Document Assistant
+Blueprint: A document assistant evaluation pipeline measuring retrieval quality, chunk/token limits and citation matching within lookup or generation workflows.
+Implementation scope: Start with a versioned corpus and deterministic retriever; validate citations against source spans; add a model adapter only as a separate layer.
+Invariant: Every accepted citation resolves to a real span in the selected corpus version; unsupported answers remain distinguishable.
+Verification: Fixed questions with labelled supporting spans; evaluate retrieval separately from citation and answer quality.
+Portfolio relevance: Evidence-grounding evaluation rather than assuming fluent text is correct.
+
+14. Activation Atlas: Inspect a Tiny Transformer
+Blueprint: An interpretability toolkit conducting hypothesis-driven representation tests across internal hidden layers and producing behaviour cards.
+Implementation scope: Capture activations/attention on a small transformer, run controlled probes and interventions, and document baselines and alternate explanations.
+Invariant: Each interpretation claim is traceable to an experiment and limitation; correlation is not presented as causal proof.
+Verification: Saved checkpoints/seeds, negative controls and repeatable probe summaries.
+Portfolio relevance: Transparent, cautious experiments into model internals.
+
+15. ML ContractKit: Data-to-Prediction Invariants
+Blueprint: A monitoring layer enforcing reproducible validation contracts on operational data shapes and tracking pipeline lineage.
+Implementation scope: Version schemas/contracts; validate fields, ranges and shapes before inference; check output schemas and preserve lineage metadata.
+Invariant: Invalid data is rejected/quarantined under declared rules; valid output is tied to a specific contract and model version.
+Verification: Known-clean and deliberately invalid datasets with reproducible reports.
+Portfolio relevance: Production-minded MLOps safeguards that can be tested locally.
+
+TRACK IV — SECURITY ENGINEERING, THREAT ANALYSIS & INFRASTRUCTURE
+-------------------------------------------------------------------
+
+16. GuardRail Web: A Local AppSec Regression Lab
+Blueprint: A local application-security kit fuzzing multi-role authorization against application state changes to detect authorization drops and session isolation faults.
+Implementation scope: Use only a deliberate local fixture application with synthetic users/data; define a permission matrix and generate allowed/denied route sequences.
+Invariant: Routes enforce the declared access matrix and separate sessions cannot access each other's protected test records.
+Verification: Replay every discovered regression locally; do not test systems without permission.
+Portfolio relevance: Threat modelling and systematic authorization validation in a controlled lab.
+
+17. SignalDesk: Alert Triage Metrics and Incident Timeline Replay
+Blueprint: A defensive security dashboard processing synthetic infrastructure logs, tracking event states and evaluating detection precision/recall.
+Implementation scope: Normalize/correlate events, replay timelines and compare alert rules with a labelled synthetic incident set.
+Invariant: Alerts link to source events/rule versions; metrics use a defined ground-truth evaluation set.
+Verification: Replay incident fixtures, validate ordering and independently calculate the confusion matrix.
+Portfolio relevance: Log processing, incident analysis and transparent detection-quality metrics.
+
+18. LocalLineage: Idempotent Backfill and Schema Evolution Replay
+Blueprint: A data toolchain simulating file transitions, repeatable backfills, schema evolution and automated data-quality checks.
+Implementation scope: Version schemas, checkpoint migrations and backfills, define interruption/rollback behaviour and validate constraints.
+Invariant: Replaying an operation follows explicit idempotency rules; schema version advances only after successful migration.
+Verification: Compare single, repeated and interrupted runs with expected snapshots.
+Portfolio relevance: Transactional state reasoning and reliable data-pipeline evolution.
+
+19. ReproBuild Drift: Environment Drift Detector & Clean-Room Bootstrap
+Blueprint: An environment-audit tool detecting configuration drift and reconstructing a clean workspace from declared dependencies.
+Implementation scope: Inventory controlled files, tool versions and configuration; categorise drift; bootstrap from an explicit allowlisted manifest.
+Invariant: Drift reports are deterministic and attributable; clean builds do not silently rely on undeclared machine state.
+Verification: Seeded workspace-difference fixtures and repeatable clean-room runs.
+Portfolio relevance: Dependency visibility, environment reproducibility and supply-chain hygiene.
+Scope separation: Project 5 (ReproBuild Core) safely runs allowed build commands. Project 19 (ReproBuild Drift) audits/reconstructs the environment those commands depend on.
+
+20. CivicLedger: A Local SQLite Public-Data Warehouse
+Blueprint: A public-data processing system parsing civic files into transactionally loaded SQLite tables with integrity checks and query-plan analysis.
+Implementation scope: Preserve source provenance, stage/normalise records, handle rejected rows explicitly, run atomic/restartable loads and compare selected query plans.
+Invariant: Accepted rows map to source inputs, rejected records have reasons, and transaction/restart behaviour follows the documented policy.
+Verification: Rebuild from saved public-data fixtures, compare constraints/counts, and record query-plan details for indexed/unindexed cases.
+Portfolio relevance: Database normalisation, transactional integrity and data-driven query optimisation.
+
+IMPLEMENTATION GUARDRAILS
+------------------------
+- All 20 entries above are planned, not completed credentials. Use project status labels and the verification gates to record real progress.
+- Never paste target test counts or expected speedups into RESULTS.md as measured results. Store exact commands, seeds, dataset versions, environment and limitations.
+- Use each project’s own README, architecture notes, tests and RESULTS.md; a single commit at the end can still be honest, but maintain local checkpoints/backups while working.
+- Security work is confined to local test targets and synthetic data unless explicit authorization exists.
+- ReproBuild appears twice by design as a tool family: Project 5 is a safe allowlisted command runner; Project 19 detects environment drift and attempts a clean-room bootstrap. Keep their repository scopes and interfaces distinct.
+
+SUGGESTED SIX-REPOSITORY ARCHITECTURE
+-------------------------------------
+1. `portfolio-master-registry`: personal site, project index, CV draft and evidence links.
+2. `tiny-distributed-job-queue`: Project 1 as a flagship with a state-machine spec, fault schedules and reproducible tests.
+3. `core-systems-toolkit`: Projects 2–5 with clear subdirectories or separately versioned modules. Keep C library, VM, PageStore simulator and build runner boundaries explicit.
+4. `algorithm-verification-lab`: Projects 6–10 with separate algorithm implementations, generators, oracles and reproducible result files.
+5. `ml-mechanics-lab`: Projects 11–15 with isolated datasets/configurations, evaluation scripts and experiment reports.
+6. `security-infrastructure-lab`: Projects 16–20 using local/synthetic security fixtures, data-migration fixtures, environment manifests and the CivicLedger sample dataset.
+
+A separate `sandbox` repository may hold throwaway experiments and learning exercises; it is not a substitute for tests or documentation in the main repositories. This is a proposed layout, not a rule that every project must be merged into a monolith. Split a project into its own repository when its build, threat model, data/licensing needs or release lifecycle genuinely justify separation.

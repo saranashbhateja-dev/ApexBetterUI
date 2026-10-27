@@ -1,0 +1,20 @@
+{
+  "name": "apex-os",
+  "version": "2.3.0",
+  "private": true,
+  "scripts": {
+    "start": "node server.cjs",
+    "cap:sync": "npx cap sync android",
+    "android": "npx cap open android",
+    "android:build": "npx cap sync android && cd android && gradlew.bat assembleDebug"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.0.0",
+    "@capacitor/cli": "^8.0.0",
+    "@capacitor/core": "^8.0.0"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "description": "Apex OS university admissions, competitions, projects, and portfolio command centre"
+}

@@ -1,0 +1,7 @@
+project_id = "bztsnkejidzjjlaghtly"
+
+[functions.apex-os-sync]
+verify_jwt = false
+
+[functions.apex-os-ai]
+verify_jwt = false

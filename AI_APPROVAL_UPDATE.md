@@ -1,0 +1,3 @@
+# Apex OS — approved AI dossier rewrites
+
+After a university research report is saved, select **Prepare proposed updates**. Apex asks OpenRouter to propose section-level dossier replacements with a rationale, confidence label, and source links. Review each proposal, deselect any changes you do not want, then choose **Approve checked & rewrite dossier**. The app confirms before applying. Approved sections appear in the university's separate AI-maintained dossier; previous approved values are kept in workspace history. The user's original notes, static university snapshots, checklists, and application status are not overwritten.

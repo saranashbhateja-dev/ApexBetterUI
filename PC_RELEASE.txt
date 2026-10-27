@@ -1,0 +1,1 @@
+Apex OS PC v2.3 — Supabase Auth sign-in + scrollable sidebar navigation
