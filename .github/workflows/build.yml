@@ -1,72 +1,114 @@
+
 name: Build Apex OS APK
 
 on:
   workflow_dispatch:
   push:
-    branches: ["main"]
+    branches:
+      - main
+      - master
+
+permissions:
+  contents: read
 
 jobs:
   build:
+    name: Build Android Debug APK
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
+
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node
+      - name: Locate Apex OS project
+        shell: bash
+        run: |
+          if [ -f "package.json" ]; then
+            echo "PROJECT_DIR=." >> "$GITHUB_ENV"
+          elif [ -f "Apex OS/package.json" ]; then
+            echo "PROJECT_DIR=Apex OS" >> "$GITHUB_ENV"
+          else
+            echo "::error::Cannot find Apex OS package.json."
+            echo "Upload the contents of the Apex OS folder to the repository."
+            exit 1
+          fi
+
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
 
-      - name: Setup Java
+      - name: Set up Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: "21"
 
-      - name: Setup Android SDK
+      - name: Set up Android SDK
         uses: android-actions/setup-android@v4
         with:
-          packages: 'platform-tools platforms;android-36 build-tools;36.0.0'
+          packages: "platform-tools platforms;android-36 build-tools;36.0.0"
 
       - name: Install dependencies
+        working-directory: ${{ env.PROJECT_DIR }}
         run: npm install
 
-      - name: Prepare APK web assets
+      - name: Prepare web assets
+        working-directory: ${{ env.PROJECT_DIR }}
+        shell: bash
         run: |
-          rm -rf www
+          set -e
+
           mkdir -p www
-          cp index.html styles.css app.js sync-client.js supabase-config.js source-project-details.js university-admissions-source-data.js manifest.webmanifest www/
-          python - <<'PY'
+
+          cp index.html www/
+          cp styles.css www/
+          cp app.js www/
+          cp sync-client.js www/
+          cp supabase-config.js www/
+          cp source-project-details.js www/
+          cp university-admissions-source-data.js www/
+          cp manifest.webmanifest www/
+
+          python3 - <<'PY'
           from pathlib import Path
+
           p = Path("www/index.html")
           s = p.read_text(encoding="utf-8")
-          # Capacitor packages the frontend in a native WebView; do not register the browser service worker.
+
+          # Capacitor uses a native WebView; disable browser service-worker
+          # registration in the packaged Android app.
           s = s.replace(
               "window.ApexAndroid = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());",
               "window.ApexAndroid = true;"
           )
-          s = s.replace(
-              "if (!window.ApexAndroid && 'serviceWorker' in navigator",
-              "if (!window.ApexAndroid && 'serviceWorker' in navigator"
-          )
+
           p.write_text(s, encoding="utf-8")
           PY
 
-      - name: Add Android platform
-        run: npx cap add android
+      - name: Add Android platform if missing
+        working-directory: ${{ env.PROJECT_DIR }}
+        shell: bash
+        run: |
+          if [ ! -d android ]; then
+            npx cap add android
+          fi
 
       - name: Sync Capacitor
+        working-directory: ${{ env.PROJECT_DIR }}
         run: npx cap sync android
 
       - name: Build debug APK
-        run: cd android && ./gradlew assembleDebug
+        working-directory: ${{ env.PROJECT_DIR }}
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew --no-daemon assembleDebug
 
-      - name: Upload APK
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: Apex-OS-debug-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          path: ${{ env.PROJECT_DIR }}/android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 14
